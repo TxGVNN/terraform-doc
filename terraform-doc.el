@@ -1,4 +1,4 @@
-;;; terraform-doc.el --- Explore a GitHub repository on the fly -*- lexical-binding: t -*-
+;;; terraform-doc.el --- Look up terraform documentation on the fly -*- lexical-binding: t -*-
 
 ;; Copyright (C) 2019 Giap Tran <txgvnn@gmail.com>
 
@@ -32,7 +32,7 @@
 (require 'json)
 
 (defgroup terraform nil
-  "Major mode of Terraform configuration file."
+  "Major mode of terraform-doc file."
   :group 'languages
   :prefix "terraform-doc-")
 
@@ -55,7 +55,7 @@
 
 ;;;###autoload
 (defun terraform-doc (&optional provider)
-  "Lookup PROVIDER."
+  "Look up PROVIDER."
   (interactive (list
                 (cdr (assoc (completing-read
                              "Provider: "
@@ -92,7 +92,7 @@
 
 
 (define-derived-mode terraform-doc-mode special-mode terraform-doc-name
-  "Major mode for exploring Terraform repository on the fly"
+  "Major mode for looking up terraform documentation on the fly."
   (setq buffer-auto-save-file-name nil
         buffer-read-only t))
 
