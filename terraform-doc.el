@@ -47,12 +47,20 @@
   :group 'terraform)
 
 (defvar terraform-doc-providers
-  '("acme" "akamai" "alicloud" "archive" "arukas" "avi" "aws" "azurerm" "azuread" "azurestack" "bitbucket" "brightbox" "clc" "chef" "circonus" "ciscoasa" "aci" "cloudflare" "cloudscale" "cloudstack" "cobbler" "consul" "datadog" "do" "dns" "dnsimple" "dme" "docker" "dyn" "external" "bigip" "fastly" "flexibleengine" "fortios" "github" "gitlab" "google" "grafana" "gridscale" "hedvig" "helm" "heroku" "hcloud" "http" "huaweicloud" "icinga2" "ignition" "influxdb" "jdcloud" "kubernetes" "librato" "linode" "local" "logentries" "logicmonitor" "mailgun" "mysql" "ncloud" "netlify" "newrelic" "nomad" "ns1" "null" "nutanix" "oneandone" "openstack" "opentelekomcloud" "opsgenie" "oci" "oraclepaas" "opc" "ovh" "packet" "pagerduty" "panos" "postgresql" "powerdns" "profitbricks" "rabbitmq" "rancher" "rancher2" "random" "rightscale" "rundeck" "runscope" "scaleway" "selectel" "signalfx" "skytap" "softlayer" "spotinst" "statuscake" "telefonicaopencloud" "template" "tencentcloud" "terraform" "tfe" "tls" "triton" "ucloud" "ultradns" "vault" "nsxt" "vcd" "vra7" "vsphere" "yandex"))
+  '(("ACME" . "acme") ("Akamai" . "akamai") ("Alibaba Cloud" . "alicloud") ("Archive" . "archive") ("Arukas" . "arukas") ("Avi Vantage" . "avi") ("AWS" . "aws") ("Azure" . "azurerm") ("Azure Active Directory" . "azuread") ("Azure Stack" . "azurestack") ("Bitbucket" . "bitbucket") ("Brightbox" . "brightbox") ("CenturyLinkCloud" . "clc") ("Chef" . "chef") ("Circonus" . "circonus") ("Cisco ASA" . "ciscoasa") ("Cisco ACI" . "aci") ("Cloudflare" . "cloudflare") ("CloudScale.ch" . "cloudscale") ("CloudStack" . "cloudstack") ("Cobbler" . "cobbler") ("Consul" . "consul")
+    ("Datadog" . "datadog") ("DigitalOcean" . "do") ("DNS" . "dns") ("DNSimple" . "dnsimple") ("DNSMadeEasy" . "dme") ("Docker" . "docker") ("Dyn" . "dyn") ("External" . "external") ("F5 BIG-IP" . "bigip") ("Fastly" . "fastly") ("FlexibleEngine" . "flexibleengine") ("FortiOS" . "fortios") ("GitHub" . "github") ("GitLab" . "gitlab") ("Google Cloud Platform" . "google") ("Grafana" . "grafana") ("Gridscale" . "gridscale") ("Hedvig" . "hedvig") ("Helm" . "helm") ("Heroku" . "heroku") ("Hetzner Cloud" . "hcloud") ("HTTP" . "http") ("HuaweiCloud" . "huaweicloud") ("Icinga2" . "icinga2")
+    ("Ignition" . "ignition") ("InfluxDB" . "influxdb") ("JDCloud" . "jdcloud") ("Kubernetes" . "kubernetes") ("Librato" . "librato") ("Linode" . "linode") ("Local" . "local") ("Logentries" . "logentries") ("LogicMonitor" . "logicmonitor") ("Mailgun" . "mailgun") ("MySQL" . "mysql") ("Naver Cloud" . "ncloud") ("Netlify" . "netlify") ("New Relic" . "newrelic") ("Nomad" . "nomad") ("NS1" . "ns1") ("Null" . "null") ("Nutanix" . "nutanix") ("1 and 1" . "oneandone") ("OpenStack" . "openstack") ("OpenTelekomCloud" . "opentelekomcloud") ("OpsGenie" . "opsgenie")
+    ("Oracle Cloud Infrastructure" . "oci") ("Oracle Cloud Platform" . "oraclepaas") ("Oracle Public Cloud" . "opc") ("OVH" . "ovh") ("Packet" . "packet") ("PagerDuty" . "pagerduty") ("Palo Alto Networks" . "panos") ("PostgreSQL" . "postgresql") ("PowerDNS" . "powerdns") ("ProfitBricks" . "profitbricks") ("RabbitMQ" . "rabbitmq") ("Rancher" . "rancher") ("Rancher2" . "rancher2") ("Random" . "random") ("RightScale" . "rightscale") ("Rundeck" . "rundeck") ("RunScope" . "runscope") ("Scaleway" . "scaleway") ("Selectel" . "selectel") ("SignalFx" . "signalfx") ("Skytap" . "skytap")
+    ("SoftLayer" . "softlayer") ("Spotinst" . "spotinst") ("StatusCake" . "statuscake") ("TelefonicaOpenCloud" . "telefonicaopencloud") ("Template" . "template") ("TencentCloud" . "tencentcloud") ("Terraform" . "terraform") ("Terraform Enterprise" . "tfe") ("TLS" . "tls") ("Triton" . "triton") ("UCloud" . "ucloud") ("UltraDNS" . "ultradns") ("Vault" . "vault") ("VMware NSX-T" . "nsxt") ("VMware vCloud Director" . "vcd") ("VMware vRA7" . "vra7") ("VMware vSphere" . "vsphere") ("Yandex" . "yandex")))
 
 ;;;###autoload
 (defun terraform-doc (&optional provider)
   "Lookup PROVIDER."
-  (interactive (list (completing-read "Provider: " terraform-doc-providers)))
+  (interactive (list
+                (cdr (assoc (completing-read
+                             "Provider: "
+                             (mapcar (lambda (x) (car x)) terraform-doc-providers))
+                            terraform-doc-providers))))
   (terraform-doc--render-object
    (format "https://www.terraform.io/docs/providers/%s/index.html" provider)
    (format "*Terraform/provider:%s*" provider)))
