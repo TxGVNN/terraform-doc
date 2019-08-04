@@ -1,0 +1,8 @@
+Lookup docs from Terraform hompage
+
+* Usage
+
+#+BEGIN_SRC
+M-x terraform-doc "provider"
+#+END_SRC
+
