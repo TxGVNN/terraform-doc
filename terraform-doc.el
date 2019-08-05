@@ -41,10 +41,22 @@
   :type 'hook
   :group 'terraform)
 
-(defcustom terraform-doc-name "Terraform"
+(defcustom terraform-doc-name "Terraform-Doc"
   "*Modeline of `terraform-doc'."
   :type 'string
   :group 'terraform)
+
+(defvar terraform-doc-mode-map
+  (let ((keymap (make-sparse-keymap)))
+    (define-key keymap (kbd "o") 'terraform-doc-at-point)
+    (define-key keymap (kbd "RET") 'terraform-doc-at-point)
+    (define-key keymap (kbd "n") 'next-line)
+    (define-key keymap (kbd "p") 'previous-line)
+    keymap)
+  "Keymap for Terraform-Doc major mode.")
+
+(defvar terraform-doc-url-base "https://www.terraform.io")
+(defvar terraform-doc-url-temp nil)
 
 (defvar terraform-doc-providers
   '(("ACME" . "acme") ("Akamai" . "akamai") ("Alibaba Cloud" . "alicloud") ("Archive" . "archive") ("Arukas" . "arukas") ("Avi Vantage" . "avi") ("AWS" . "aws") ("Azure" . "azurerm") ("Azure Active Directory" . "azuread") ("Azure Stack" . "azurestack") ("Bitbucket" . "bitbucket") ("Brightbox" . "brightbox") ("CenturyLinkCloud" . "clc") ("Chef" . "chef") ("Circonus" . "circonus") ("Cisco ASA" . "ciscoasa") ("Cisco ACI" . "aci") ("Cloudflare" . "cloudflare") ("CloudScale.ch" . "cloudscale") ("CloudStack" . "cloudstack") ("Cobbler" . "cobbler") ("Consul" . "consul")
@@ -62,13 +74,24 @@
                              (mapcar (lambda (x) (car x)) terraform-doc-providers))
                             terraform-doc-providers))))
   (terraform-doc--render-object
-   (format "https://www.terraform.io/docs/providers/%s/index.html" provider)
-   (format "*Terraform/provider:%s*" provider)))
+   (format "%s/docs/providers/%s/index.html" terraform-doc-url-base provider)
+   (format "*Terraform:provider/%s*" provider)))
+
+(defun terraform-doc-at-point()
+  "Render url by 'terraform-doc--render-object."
+  (interactive)
+  (let* ((url (get-text-property (point) 'shr-url))
+         (buffer-name  (replace-regexp-in-string
+                        (format "%s/docs/\\(.*\\).html" terraform-doc-url-base) "\\1" url)))
+    (if (string-match-p (regexp-quote terraform-doc-url-base) url)
+        (terraform-doc--render-object url (format "*Terraform:%s*" buffer-name))
+      (eww url))))
 
 (defun terraform-doc--render-object (url buffer-name)
   "Render the URL and rename to BUFFER-NAME."
   (if (get-buffer buffer-name)
       (switch-to-buffer buffer-name)
+    (setq terraform-doc-url-temp url)
     (url-retrieve
      url
      (lambda (arg)
@@ -84,6 +107,11 @@
            (search-forward "<div id=\"footer\"")
            (search-backward "</div>" nil nil 2)
            (delete-region (point) (point-max))
+           (perform-replace "&raquo;" "*" nil nil nil nil nil (point-min) (point-max))
+           (perform-replace "href=\"#.+?\">" (format "href=\"%s\">" terraform-doc-url-temp)
+                            nil t nil nil nil (point-min) (point-max))
+           (perform-replace "href=\"/" (format "href=\"%s/" terraform-doc-url-base)
+                            nil nil nil nil nil (point-min) (point-max))
            (shr-render-region (point-min) (point-max))
            (goto-char (point-min))
            (rename-buffer buffer-name)
@@ -93,6 +121,7 @@
 
 (define-derived-mode terraform-doc-mode special-mode terraform-doc-name
   "Major mode for looking up terraform documentation on the fly."
+  (local-set-key [remap shr-browse-url] 'terraform-doc-at-point)
   (setq buffer-auto-save-file-name nil
         buffer-read-only t))
 
