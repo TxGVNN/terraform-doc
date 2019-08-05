@@ -50,6 +50,8 @@
   (let ((keymap (make-sparse-keymap)))
     (define-key keymap (kbd "o") 'terraform-doc-at-point)
     (define-key keymap (kbd "RET") 'terraform-doc-at-point)
+    (define-key keymap (kbd "<tab>") 'shr-next-link)
+    (define-key keymap (kbd "TAB") 'shr-next-link)
     (define-key keymap (kbd "n") 'next-line)
     (define-key keymap (kbd "p") 'previous-line)
     keymap)
@@ -73,19 +75,49 @@
                              "Provider: "
                              (mapcar (lambda (x) (car x)) terraform-doc-providers))
                             terraform-doc-providers))))
-  (terraform-doc--render-object
+  (terraform-doc--render-tree
    (format "%s/docs/providers/%s/index.html" terraform-doc-url-base provider)
-   (format "*Terraform:provider/%s*" provider)))
+   (format "*Terraform:providers/%s*" provider)))
 
 (defun terraform-doc-at-point()
   "Render url by 'terraform-doc--render-object."
   (interactive)
-  (let* ((url (get-text-property (point) 'shr-url))
-         (buffer-name  (replace-regexp-in-string
-                        (format "%s/docs/\\(.*\\).html" terraform-doc-url-base) "\\1" url)))
-    (if (string-match-p (regexp-quote terraform-doc-url-base) url)
-        (terraform-doc--render-object url (format "*Terraform:%s*" buffer-name))
-      (eww url))))
+  (if (get-text-property (point) 'shr-url)
+      (let* ((url (get-text-property (point) 'shr-url))
+             (buffer-name  (replace-regexp-in-string
+                            (format "%s/docs/\\(.*\\).html" terraform-doc-url-base) "\\1" url)))
+        (if (string-match-p (regexp-quote terraform-doc-url-base) url)
+            (terraform-doc--render-object url (format "*Terraform:%s*" buffer-name))
+          (eww url)))))
+
+(defun terraform-doc--render-tree (url buffer-name)
+  "Render the URL and rename to BUFFER-NAME."
+  (if (get-buffer buffer-name)
+      (switch-to-buffer buffer-name)
+    (setq terraform-doc-url-temp url)
+    (url-retrieve
+     url
+     (lambda (arg)
+       (cond
+        ((equal :error (car arg))
+         (message arg))
+        (t
+         (with-current-buffer (current-buffer)
+           (goto-char (point-min))
+           (search-forward "<ul class=\"nav docs-sidenav\">")
+           (search-forward "</li>")
+           (beginning-of-line)
+           (delete-region (point) (point-min))
+           (search-forward "</div>")
+           (beginning-of-line)
+           (delete-region (point) (point-max))
+           (perform-replace "&raquo;" "*" nil nil nil nil nil (point-min) (point-max))
+           (perform-replace "href=\"#.*?\">" (format "href=\"%s\">" terraform-doc-url-temp)
+                            nil t nil nil nil (point-min) (point-max))
+           (perform-replace "href=\"/" (format "href=\"%s/" terraform-doc-url-base)
+                            nil nil nil nil nil (point-min) (point-max))
+           (rename-buffer buffer-name)
+           (terraform-doc-mode-on))))))))
 
 (defun terraform-doc--render-object (url buffer-name)
   "Render the URL and rename to BUFFER-NAME."
@@ -108,16 +140,19 @@
            (search-backward "</div>" nil nil 2)
            (delete-region (point) (point-max))
            (perform-replace "&raquo;" "*" nil nil nil nil nil (point-min) (point-max))
-           (perform-replace "href=\"#.+?\">" (format "href=\"%s\">" terraform-doc-url-temp)
+           (perform-replace "href=\"#.*?\">" (format "href=\"%s\">" terraform-doc-url-temp)
                             nil t nil nil nil (point-min) (point-max))
            (perform-replace "href=\"/" (format "href=\"%s/" terraform-doc-url-base)
                             nil nil nil nil nil (point-min) (point-max))
-           (shr-render-region (point-min) (point-max))
-           (goto-char (point-min))
            (rename-buffer buffer-name)
-           (terraform-doc-mode)
-           (switch-to-buffer (current-buffer)))))))))
+           (terraform-doc-mode-on))))))))
 
+(defun terraform-doc-mode-on ()
+  "Render and switch to ‘terraform-doc’ mode."
+  (shr-render-region (point-min) (point-max))
+  (goto-char (point-min))
+  (terraform-doc-mode)
+  (switch-to-buffer (current-buffer)))
 
 (define-derived-mode terraform-doc-mode special-mode terraform-doc-name
   "Major mode for looking up terraform documentation on the fly."
