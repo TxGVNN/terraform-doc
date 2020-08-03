@@ -4,7 +4,7 @@
 
 ;; Author: Giap Tran <txgvnn@gmail.com>
 ;; URL: https://github.com/TxGVNN/terraform-doc
-;; Version: 1.0.0
+;; Version: 1.0.1
 ;; Package-Requires: ((emacs "24.4"))
 ;; Keywords: comm
 
@@ -72,15 +72,18 @@
                              "Provider: "
                              (mapcar (lambda (x) (car x)) terraform-doc-providers))
                             terraform-doc-providers))))
-  (terraform-doc--render-tree provider (format "*Terraform:providers/%s*" provider)))
+  (terraform-doc--render-tree provider (format "*Terraform:%s*" provider)))
 
 (defun terraform-doc-at-point()
   "Render url by 'terraform-doc--render-object."
   (interactive)
   (if (get-text-property (point) 'shr-url)
       (let* ((url (get-text-property (point) 'shr-url))
-             (buffer-name (file-name-base (file-name-base url))))
-        (terraform-doc--render-object url (format "*Terraform:%s*" buffer-name)))))
+             (buffer-name
+              (replace-regexp-in-string
+               (regexp-quote ".html.markdown") "" (string-join (last (split-string url "/") 2) "/")))
+             (provider (replace-regexp-in-string ".*terraform-provider-\\(.*\\)/master/.*" "\\1" url)))
+        (terraform-doc--render-object url (format "*Terraform:%s:%s*" provider buffer-name)))))
 
 (defun terraform-doc--render-tree (provider buffer-name)
   "Render the PROVIDER and rename to BUFFER-NAME."
@@ -136,6 +139,7 @@
          (rename-buffer buffer-name)
          (if (fboundp 'markdown-mode)
              (markdown-mode))
+         (setq buffer-read-only t)
          (switch-to-buffer (current-buffer))))))))
 
 (defun terraform-doc-mode-on ()
