@@ -4,7 +4,7 @@
 
 ;; Author: Giap Tran <txgvnn@gmail.com>
 ;; URL: https://github.com/TxGVNN/terraform-doc
-;; Version: 0.1
+;; Version: 1.0
 ;; Package-Requires: ((emacs "24.4"))
 ;; Keywords: comm
 
@@ -28,8 +28,6 @@
 
 ;;; Code:
 
-(require 'cl-lib)
-(require 'json)
 (require 'shr)
 
 (defgroup terraform nil
@@ -58,15 +56,13 @@
     keymap)
   "Keymap for Terraform-Doc major mode.")
 
-(defvar terraform-doc-url-base "https://www.terraform.io")
-(defvar terraform-doc-url-temp nil)
 
 (defvar terraform-doc-providers
-  '(("ACME" . "acme") ("Akamai" . "akamai") ("Alibaba Cloud" . "alicloud") ("Archive" . "archive") ("Arukas" . "arukas") ("Avi Vantage" . "avi") ("AWS" . "aws") ("Azure" . "azurerm") ("Azure Active Directory" . "azuread") ("Azure Stack" . "azurestack") ("Bitbucket" . "bitbucket") ("Brightbox" . "brightbox") ("CenturyLinkCloud" . "clc") ("Chef" . "chef") ("Circonus" . "circonus") ("Cisco ASA" . "ciscoasa") ("Cisco ACI" . "aci") ("Cloudflare" . "cloudflare") ("CloudScale.ch" . "cloudscale") ("CloudStack" . "cloudstack") ("Cobbler" . "cobbler") ("Consul" . "consul")
-    ("Datadog" . "datadog") ("DigitalOcean" . "do") ("DNS" . "dns") ("DNSimple" . "dnsimple") ("DNSMadeEasy" . "dme") ("Docker" . "docker") ("Dyn" . "dyn") ("External" . "external") ("F5 BIG-IP" . "bigip") ("Fastly" . "fastly") ("FlexibleEngine" . "flexibleengine") ("FortiOS" . "fortios") ("GitHub" . "github") ("GitLab" . "gitlab") ("Google Cloud Platform" . "google") ("Grafana" . "grafana") ("Gridscale" . "gridscale") ("Hedvig" . "hedvig") ("Helm" . "helm") ("Heroku" . "heroku") ("Hetzner Cloud" . "hcloud") ("HTTP" . "http") ("HuaweiCloud" . "huaweicloud") ("Icinga2" . "icinga2")
-    ("Ignition" . "ignition") ("InfluxDB" . "influxdb") ("JDCloud" . "jdcloud") ("Kubernetes" . "kubernetes") ("Librato" . "librato") ("Linode" . "linode") ("Local" . "local") ("Logentries" . "logentries") ("LogicMonitor" . "logicmonitor") ("Mailgun" . "mailgun") ("MySQL" . "mysql") ("Naver Cloud" . "ncloud") ("Netlify" . "netlify") ("New Relic" . "newrelic") ("Nomad" . "nomad") ("NS1" . "ns1") ("Null" . "null") ("Nutanix" . "nutanix") ("1 and 1" . "oneandone") ("OpenStack" . "openstack") ("OpenTelekomCloud" . "opentelekomcloud") ("OpsGenie" . "opsgenie")
-    ("Oracle Cloud Infrastructure" . "oci") ("Oracle Cloud Platform" . "oraclepaas") ("Oracle Public Cloud" . "opc") ("OVH" . "ovh") ("Packet" . "packet") ("PagerDuty" . "pagerduty") ("Palo Alto Networks" . "panos") ("PostgreSQL" . "postgresql") ("PowerDNS" . "powerdns") ("ProfitBricks" . "profitbricks") ("RabbitMQ" . "rabbitmq") ("Rancher" . "rancher") ("Rancher2" . "rancher2") ("Random" . "random") ("RightScale" . "rightscale") ("Rundeck" . "rundeck") ("RunScope" . "runscope") ("Scaleway" . "scaleway") ("Selectel" . "selectel") ("SignalFx" . "signalfx") ("Skytap" . "skytap")
-    ("SoftLayer" . "softlayer") ("Spotinst" . "spotinst") ("StatusCake" . "statuscake") ("TelefonicaOpenCloud" . "telefonicaopencloud") ("Template" . "template") ("TencentCloud" . "tencentcloud") ("Terraform" . "terraform") ("Terraform Enterprise" . "tfe") ("TLS" . "tls") ("Triton" . "triton") ("UCloud" . "ucloud") ("UltraDNS" . "ultradns") ("Vault" . "vault") ("VMware NSX-T" . "nsxt") ("VMware vCloud Director" . "vcd") ("VMware vRA7" . "vra7") ("VMware vSphere" . "vsphere") ("Yandex" . "yandex")))
+  '(("ACME" . "acme") ("Akamai" . "akamai") ("Alibaba Cloud" . "alicloud") ("Archive" . "archive") ("Arukas" . "arukas") ("Auth0" . "auth0") ("Avi Vantage" . "avi") ("Aviatrix" . "aviatrix") ("AWS" . "aws") ("Azure" . "azurerm") ("Azure Active Directory" . "azuread") ("Azure DevOps" . "azuredevops") ("Azure Stack" . "azurestack") ("A10 Networks" . "vthunder") ("BaiduCloud" . "baiducloud") ("Bitbucket" . "bitbucket") ("Brightbox" . "brightbox") ("CenturyLinkCloud" . "clc") ("Check Point" . "checkpoint") ("Chef" . "chef") ("CherryServers" . "cherryservers") ("Circonus" . "circonus") ("Cisco ASA" . "ciscoasa") ("Cisco ACI" . "aci") ("Cisco MSO" . "mso") ("CloudAMQP" . "cloudamqp") ("Cloudflare" . "cloudflare") ("Cloud-init" . "cloudinit") ("CloudScalech" . "cloudscale") ("CloudStack" . "cloudstack") ("Cobbler" . "cobbler") ("Cohesity" . "cohesity") ("Constellix" . "constellix") ("Consul" . "consul")
+    ("Datadog" . "datadog") ("DigitalOcean" . "do") ("DNS" . "dns") ("DNSimple" . "dnsimple") ("DNSMadeEasy" . "dme") ("Docker" . "docker") ("Dome9" . "dome9") ("Dyn" . "dyn") ("EnterpriseCloud" . "ecl") ("Exoscale" . "exoscale") ("External" . "external") ("F5 BIG-IP" . "bigip") ("Fastly" . "fastly") ("FlexibleEngine" . "flexibleengine") ("FortiOS" . "fortios") ("Genymotion" . "genymotion") ("GitHub" . "github") ("GitLab" . "gitlab") ("Google Cloud Platform" . "google") ("Grafana" . "grafana") ("Gridscale" . "gridscale") ("Hedvig" . "hedvig") ("Helm" . "helm") ("Heroku" . "heroku") ("Hetzner Cloud" . "hcloud") ("HTTP" . "http") ("HuaweiCloud" . "huaweicloud") ("HuaweiCloudStack" . "huaweicloudstack") ("Icinga2" . "icinga2")
+    ("Ignition" . "ignition") ("Incapsula" . "incapsula") ("InfluxDB" . "influxdb") ("Infoblox" . "infoblox") ("JDCloud" . "jdcloud") ("KingsoftCloud" . "ksyun") ("Kubernetes" . "kubernetes") ("Lacework" . "lacework") ("LaunchDarkly" . "launchdarkly") ("Librato" . "librato") ("Linode" . "linode") ("Local" . "local") ("Logentries" . "logentries") ("LogicMonitor" . "logicmonitor") ("Mailgun" . "mailgun") ("MetalCloud" . "metalcloud") ("MongoDB Atlas" . "mongodbatlas") ("MySQL" . "mysql") ("Naver Cloud" . "ncloud") ("Netlify" . "netlify") ("Nomad" . "nomad") ("NS1" . "ns1") ("Nutanix" . "nutanix") ("1 & 1" . "oneandone") ("Okta" . "okta") ("Okta Advanced Server Access" . "oktaasa") ("OpenNebula" . "opennebula") ("OpenStack" . "openstack") ("OpenTelekomCloud" . "opentelekomcloud") ("OpsGenie" . "opsgenie")
+    ("Oracle Cloud Infrastructure" . "oci") ("Oracle Cloud Platform" . "oraclepaas") ("Oracle Public Cloud" . "opc") ("OVH" . "ovh") ("Packet" . "packet") ("PagerDuty" . "pagerduty") ("Palo Alto Networks PANOS" . "panos") ("Palo Alto Networks PrismaCloud" . "prismacloud") ("PostgreSQL" . "postgresql") ("PowerDNS" . "powerdns") ("ProfitBricks" . "profitbricks") ("Pureport" . "pureport") ("RabbitMQ" . "rabbitmq") ("Rancher" . "rancher") ("Rancher2" . "rancher2") ("RightScale" . "rightscale") ("Rubrik" . "rubrik") ("Rundeck" . "rundeck") ("RunScope" . "runscope") ("Scaleway" . "scaleway") ("Selectel" . "selectel") ("SignalFx" . "signalfx") ("Skytap" . "skytap")
+    ("SoftLayer" . "softlayer") ("Spotinst" . "spotinst") ("StackPath" . "stackpath") ("StatusCake" . "statuscake") ("Sumo Logic" . "sumologic") ("TelefonicaOpenCloud" . "telefonicaopencloud") ("Template" . "template") ("TencentCloud" . "tencentcloud") ("Terraform" . "terraform") ("Terraform Cloud" . "tfe") ("Time" . "time") ("TLS" . "tls") ("Triton" . "triton") ("Turbot" . "turbot") ("UCloud" . "ucloud") ("UltraDNS" . "ultradns") ("Vault" . "vault") ("Venafi" . "venafi") ("VMware Cloud" . "vmc") ("VMware NSX-T" . "nsxt") ("VMware vCloud Director" . "vcd") ("VMware vRA7" . "vra7") ("VMware vSphere" . "vsphere") ("Vultr" . "vultr") ("Wavefront" . "wavefront") ("Yandex" . "yandex")))
 
 ;;;###autoload
 (defun terraform-doc (&optional provider)
@@ -76,42 +72,57 @@
                              "Provider: "
                              (mapcar (lambda (x) (car x)) terraform-doc-providers))
                             terraform-doc-providers))))
-  (terraform-doc--render-tree
-   (format "%s/docs/providers/%s/index.html" terraform-doc-url-base provider)
-   (format "*Terraform:providers/%s*" provider)))
+  (terraform-doc--render-tree provider (format "*Terraform:providers/%s*" provider)))
 
 (defun terraform-doc-at-point()
   "Render url by 'terraform-doc--render-object."
   (interactive)
   (if (get-text-property (point) 'shr-url)
       (let* ((url (get-text-property (point) 'shr-url))
-             (buffer-name  (replace-regexp-in-string
-                            (format "%s/docs/\\(.*\\).html" terraform-doc-url-base) "\\1" url)))
-        (if (string-match-p (regexp-quote terraform-doc-url-base) url)
-            (terraform-doc--render-object url (format "*Terraform:%s*" buffer-name))
-          (eww url)))))
+             (buffer-name (file-name-base (file-name-base url))))
+        (terraform-doc--render-object url (format "*Terraform:%s*" buffer-name)))))
 
-(defun terraform-doc--render-tree (url buffer-name)
-  "Render the URL and rename to BUFFER-NAME."
+(defun terraform-doc--render-tree (provider buffer-name)
+  "Render the PROVIDER and rename to BUFFER-NAME."
   (if (get-buffer buffer-name)
       (switch-to-buffer buffer-name)
-    (setq terraform-doc-url-temp url)
-    (url-retrieve
-     url
-     (lambda (arg)
-       (cond
-        ((equal :error (car arg))
-         (message arg))
-        (t
-         (terraform-doc--modify-source (current-buffer) 'tree)
-         (rename-buffer buffer-name)
-         (terraform-doc-mode-on)))))))
+    (with-current-buffer (get-buffer-create buffer-name)
+      (insert (format "<a href=\"https://raw.githubusercontent.com/terraform-providers/terraform-provider-%s/master/website/docs/index.html.markdown\">index.html.markdown</a><br>" provider))
+      (let ((content) (urls '("d" "r")))
+        (dolist (url urls)
+          (with-current-buffer
+              (url-retrieve-synchronously
+               (format "https://github.com/terraform-providers/terraform-provider-%s/file-list/master/website/docs/%s" provider url))
+            (goto-char (point-min))
+            (search-forward-regexp "\n\n" )
+            (delete-region (point) (point-min))
+            (keep-lines ".html.markdown<")
+            (goto-char (point-min))
+            (while (re-search-forward "markdown\">" nil t)
+              (replace-match (format "markdown\">%s/" url) nil nil))
+            (goto-char (point-min))
+            (while (re-search-forward "</span>" nil t)
+              (replace-match "</span><br/>" nil nil))
+            (goto-char (point-min))
+            (while (re-search-forward "href=\"" nil t)
+              (replace-match "href=\"https://raw.githubusercontent.com" nil nil))
+
+            (setq content (buffer-string)))
+          (insert content))
+        (goto-char (point-min))
+        (while (re-search-forward "/blob" nil t)
+          (replace-match "" nil nil))
+        (goto-char (point-min))
+        (while (re-search-forward ".html.markdown<" nil t)
+          (replace-match "<" nil nil))
+        (shr-render-region (point-min) (point-max))
+        (terraform-doc-mode-on)
+        (switch-to-buffer (current-buffer))))))
 
 (defun terraform-doc--render-object (url buffer-name)
   "Render the URL and rename to BUFFER-NAME."
   (if (get-buffer buffer-name)
       (switch-to-buffer buffer-name)
-    (setq terraform-doc-url-temp url)
     (url-retrieve
      url
      (lambda (arg)
@@ -119,47 +130,18 @@
         ((equal :error (car arg))
          (message arg))
         (t
-         (terraform-doc--modify-source (current-buffer) 'object)
+         (goto-char (point-min))
+         (search-forward-regexp "\n\n" )
+         (delete-region (point) (point-min))
          (rename-buffer buffer-name)
-         (terraform-doc-mode-on)))))))
-
-(defun terraform-doc--modify-source (buffer type)
-  "Modify source code in BUFFER with TYPE."
-  (with-current-buffer buffer
-    (cond
-     ((equal type 'tree)
-      (goto-char (point-min))
-      (search-forward "<ul class=\"nav docs-sidenav\">")
-      (search-forward "</li>")
-      (beginning-of-line)
-      (delete-region (point) (point-min))
-      (search-forward "</div>")
-      (beginning-of-line)
-      (delete-region (point) (point-max)))
-     ((equal type 'object)
-      (goto-char (point-min))
-      (search-forward "<div id=\"inner\"")
-      (beginning-of-line)
-      (delete-region (point) (point-min))
-      (search-forward "<div id=\"footer\"")
-      (search-backward "</div>" nil nil 2)
-      (delete-region (point) (point-max))))
-    (goto-char (point-min))
-    (while (re-search-forward "&raquo;" nil t)
-      (replace-match "*" nil nil))
-    (goto-char (point-min))
-    (while (re-search-forward "href=\"#.*?\">" nil t)
-      (replace-match (format "href=\"%s\">" terraform-doc-url-temp) nil nil))
-    (goto-char (point-min))
-    (while (re-search-forward "href=\"/" nil t)
-      (replace-match (format "href=\"%s/" terraform-doc-url-base) nil nil))))
+         (if (fboundp 'markdown-mode)
+             (markdown-mode))
+         (switch-to-buffer (current-buffer))))))))
 
 (defun terraform-doc-mode-on ()
   "Render and switch to ‘terraform-doc’ mode."
-  (shr-render-region (point-min) (point-max))
   (goto-char (point-min))
-  (terraform-doc-mode)
-  (switch-to-buffer (current-buffer)))
+  (terraform-doc-mode))
 
 (define-derived-mode terraform-doc-mode special-mode terraform-doc-name
   "Major mode for looking up terraform documentation on the fly."
