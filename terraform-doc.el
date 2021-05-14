@@ -79,9 +79,7 @@
   (interactive)
   (if (get-text-property (point) 'shr-url)
       (let* ((url (get-text-property (point) 'shr-url))
-             (buffer-name
-              (replace-regexp-in-string
-               (regexp-quote ".html.markdown") "" (string-join (last (split-string url "/") 2) "/")))
+             (buffer-name (string-join (last (split-string url "/") 2) "/"))
              (provider (replace-regexp-in-string ".*terraform-provider-\\(.*\\)/master/.*" "\\1" url)))
         (terraform-doc--render-object url (format "*Terraform:%s:%s*" provider buffer-name)))))
 
@@ -107,7 +105,6 @@
                 (setq div (elt dives j))
                 (setq file (dom-by-class div "Link--primary"))
                 (unless (not file)
-                  ;; (dom-set-attribute file 'title (format "%s/%s" url (dom-attr file 'title)))
                   (setcdr (cdr (car file)) (list (format "%s/%s" url (dom-text file))))
                   (xml-print file)
                   (insert "<br/>"))
