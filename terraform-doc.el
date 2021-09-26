@@ -68,11 +68,14 @@
 (defun terraform-doc (&optional provider)
   "Look up PROVIDER."
   (interactive (list
-                (cdr (assoc (completing-read
+                (assoc (completing-read
                              "Provider: "
                              (mapcar (lambda (x) (car x)) terraform-doc-providers))
-                            terraform-doc-providers))))
-  (terraform-doc--render-tree provider (format "*Terraform:%s*" provider)))
+                            terraform-doc-providers)))
+  (if (member provider terraform-doc-providers)
+      (terraform-doc--render-tree (cdr provider) (format "*Terraform:%s*" (cdr provider)))
+      (message "%s" (propertize "Provider is not valid"))))
+
 
 (defun terraform-doc-at-point()
   "Render url by 'terraform-doc--render-object."
