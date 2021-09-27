@@ -68,11 +68,14 @@
 (defun terraform-doc (&optional provider)
   "Look up PROVIDER."
   (interactive (list
-                (cdr (assoc (completing-read
+                (assoc (completing-read
                              "Provider: "
                              (mapcar (lambda (x) (car x)) terraform-doc-providers))
-                            terraform-doc-providers))))
-  (terraform-doc--render-tree provider (format "*Terraform:%s*" provider)))
+                            terraform-doc-providers)))
+  (if (member provider terraform-doc-providers)
+      (terraform-doc--render-tree (cdr provider) (format "*Terraform:%s*" (cdr provider)))
+      (message "%s" (propertize "Provider is not valid"))))
+
 
 (defun terraform-doc-at-point()
   "Render url by 'terraform-doc--render-object."
@@ -88,7 +91,7 @@
   (if (get-buffer buffer-name)
       (switch-to-buffer buffer-name)
     (with-current-buffer (get-buffer-create buffer-name)
-      (insert (format "<a href=\"/terraform-providers/terraform-provider-%s/master/website/docs/index.html.markdown\">index.html.markdown</a><br/>" provider))
+      (insert (format "<a href=\"/terraform-providers/terraform-provider-%s/master/website/docs/index.html.markdown\">Provider</a><br/>" provider))
       (let ((content))
         (dolist (url '("d" "r"))
           (with-current-buffer
@@ -105,7 +108,9 @@
                 (setq div (elt dives j))
                 (setq file (dom-by-class div "Link--primary"))
                 (unless (not file)
-                  (setcdr (cdr (car file)) (list (format "%s/%s" url (dom-text file))))
+		  (set 'url_type (if (string= "d" url) "data" "resource"))
+		  (set 'formatted_str (car (split-string (dom-text file) "\\.")))
+                  (setcdr (cdr (car file)) (list (format "%s/%s" url_type formatted_str)))
                   (xml-print file)
                   (insert "<br/>"))
                 (setq j (+ j 1))))
