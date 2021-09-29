@@ -95,8 +95,8 @@
       (let ((content))
         (dolist (url '("d" "r"))
           (with-current-buffer
-              (url-retrieve-synchronously
-               (format "https://github.com/terraform-providers/terraform-provider-%s/file-list/master/website/docs/%s" provider url))
+	    (terraform-doc-get-url provider "master" url)
+	    (if (string= "HTTP/1.1 404" (buffer-substring 1 13)) (switch-to-buffer (terraform-doc-get-url provider "main" url)))
             (goto-char (point-min))
             (search-forward-regexp "\n\n" )
             (delete-region (point) (point-min))
@@ -145,6 +145,10 @@
              (markdown-mode))
          (setq buffer-read-only t)
          (switch-to-buffer (current-buffer))))))))
+
+(defun terraform-doc-get-url (provider branch url)
+  (setq outbuff (url-retrieve-synchronously
+   (format "https://github.com/terraform-providers/terraform-provider-%s/file-list/%s/website/docs/%s" provider branch url))))
 
 (defun terraform-doc-mode-on ()
   "Render and switch to ‘terraform-doc’ mode."
