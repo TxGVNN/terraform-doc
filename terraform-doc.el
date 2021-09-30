@@ -83,7 +83,7 @@
   (if (get-text-property (point) 'shr-url)
       (let* ((url (get-text-property (point) 'shr-url))
              (buffer-name (string-join (last (split-string url "/") 2) "/"))
-             (provider (replace-regexp-in-string ".*terraform-provider-\\(.*\\)/master/.*" "\\1" url)))
+             (provider (replace-regexp-in-string ".*terraform-provider-\\(.*\\)/HEAD/.*" "\\1" url)))
         (terraform-doc--render-object url (format "*Terraform:%s:%s*" provider buffer-name)))))
 
 (defun terraform-doc--render-tree (provider buffer-name)
@@ -91,12 +91,12 @@
   (if (get-buffer buffer-name)
       (switch-to-buffer buffer-name)
     (with-current-buffer (get-buffer-create buffer-name)
-      (insert (format "<a href=\"/terraform-providers/terraform-provider-%s/master/website/docs/index.html.markdown\">Provider</a><br/>" provider))
+      (insert (format "<a href=\"/terraform-providers/terraform-provider-%s/HEAD/website/docs/index.html.markdown\">Provider</a><br/>" provider))
       (let ((content))
         (dolist (url '("d" "r"))
           (with-current-buffer
               (url-retrieve-synchronously
-               (format "https://github.com/terraform-providers/terraform-provider-%s/file-list/master/website/docs/%s" provider url))
+               (format "https://github.com/terraform-providers/terraform-provider-%s/file-list/HEAD/website/docs/%s" provider url))
             (goto-char (point-min))
             (search-forward-regexp "\n\n" )
             (delete-region (point) (point-min))
