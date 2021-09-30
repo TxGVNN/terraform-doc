@@ -4,7 +4,6 @@
 
 ;; Author: Giap Tran <txgvnn@gmail.com>
 ;; URL: https://github.com/TxGVNN/terraform-doc
-;; Version: 1.0.1
 ;; Package-Requires: ((emacs "24.4"))
 ;; Keywords: comm
 
@@ -31,7 +30,7 @@
 (require 'shr)
 
 (defgroup terraform nil
-  "Major mode of terraform-doc file."
+  "Major mode of `terraform-doc' file."
   :group 'languages
   :prefix "terraform-doc-")
 
@@ -69,12 +68,12 @@
   "Look up PROVIDER."
   (interactive (list
                 (assoc (completing-read
-                             "Provider: "
-                             (mapcar (lambda (x) (car x)) terraform-doc-providers))
-                            terraform-doc-providers)))
+                        "Provider: "
+                        (mapcar (lambda (x) (car x)) terraform-doc-providers))
+                       terraform-doc-providers)))
   (if (member provider terraform-doc-providers)
       (terraform-doc--render-tree (cdr provider) (format "*Terraform:%s*" (cdr provider)))
-      (message "%s" (propertize "Provider is not valid"))))
+    (message "%s" (propertize "Provider is not valid"))))
 
 (defun terraform-doc-at-point()
   "Render url by 'terraform-doc--render-object."
@@ -101,14 +100,14 @@
             (delete-region (point) (point-min))
             (let* ((html-dom-tree (libxml-parse-html-region (point-min) (point-max)))
                    (dives (dom-elements html-dom-tree 'role "rowheader"))
-                   (j 0) (div nil) (file nil))
+                   (j 0) (div nil) (file nil) (url_type nil) (formatted_str nil))
               (erase-buffer)
               (while (< j (length dives))
                 (setq div (elt dives j))
                 (setq file (dom-by-class div "Link--primary"))
                 (unless (not file)
-		  (set 'url_type (if (string= "d" url) "data" "resource"))
-		  (set 'formatted_str (car (split-string (dom-text file) "\\.")))
+                  (setq url_type (if (string= "d" url) "data" "resource"))
+                  (setq formatted_str (car (split-string (dom-text file) "\\.")))
                   (setcdr (cdr (car file)) (list (format "%s/%s" url_type formatted_str)))
                   (xml-print file)
                   (insert "<br/>"))
