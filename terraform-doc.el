@@ -76,14 +76,13 @@
       (terraform-doc--render-tree (cdr provider) (format "*Terraform:%s*" (cdr provider)))
       (message "%s" (propertize "Provider is not valid"))))
 
-
 (defun terraform-doc-at-point()
   "Render url by 'terraform-doc--render-object."
   (interactive)
   (if (get-text-property (point) 'shr-url)
       (let* ((url (get-text-property (point) 'shr-url))
              (buffer-name (string-join (last (split-string url "/") 2) "/"))
-             (provider (replace-regexp-in-string ".*terraform-provider-\\(.*\\)/HEAD/.*" "\\1" url)))
+             (provider (replace-regexp-in-string ".*terraform-provider-\\(.+?\\)/.*" "\\1" url)))
         (terraform-doc--render-object url (format "*Terraform:%s:%s*" provider buffer-name)))))
 
 (defun terraform-doc--render-tree (provider buffer-name)
