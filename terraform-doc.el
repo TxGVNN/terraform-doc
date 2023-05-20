@@ -45,6 +45,11 @@
   :type 'string
   :group 'terraform)
 
+(defcustom terraform-doc-markdown-mode-function 'markdown-mode
+  "*Function to use for markdown rendering in `terraform-doc', e.g. `markdown-mode' or `gfm-view-mode'."
+  :type 'function
+  :group 'terraform)
+
 (defvar terraform-doc-mode-map
   (let ((keymap (make-sparse-keymap)))
     (define-key keymap (kbd "o") 'terraform-doc-at-point)
@@ -140,8 +145,8 @@
          (search-forward-regexp "\n\n" )
          (delete-region (point) (point-min))
          (rename-buffer buffer-name)
-         (if (fboundp 'markdown-mode)
-             (markdown-mode))
+         (if (fboundp terraform-doc-markdown-mode-function)
+             (funcall terraform-doc-markdown-mode-function))
          (setq buffer-read-only t)
          (switch-to-buffer (current-buffer))))))))
 
