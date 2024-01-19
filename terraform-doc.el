@@ -70,15 +70,16 @@
     ("SoftLayer" . "softlayer") ("Spotinst" . "spotinst") ("StackPath" . "stackpath") ("StatusCake" . "statuscake") ("Sumo Logic" . "sumologic") ("TelefonicaOpenCloud" . "telefonicaopencloud") ("Template" . "template") ("TencentCloud" . "tencentcloud") ("Terraform" . "terraform") ("Terraform Cloud" . "tfe") ("Time" . "time") ("TLS" . "tls") ("Triton" . "triton") ("Turbot" . "turbot") ("UCloud" . "ucloud") ("UltraDNS" . "ultradns") ("Vault" . "vault") ("Venafi" . "venafi") ("VMware Cloud" . "vmc") ("VMware NSX-T" . "nsxt") ("VMware vCloud Director" . "vcd") ("VMware vRA7" . "vra7") ("VMware vSphere" . "vsphere") ("Vultr" . "vultr") ("Wavefront" . "wavefront") ("Yandex" . "yandex")))
 
 ;;;###autoload
-(defun terraform-doc (&optional provider)
+(defun terraform-doc (&optional provider version)
   "Look up PROVIDER."
   (interactive (list
                 (assoc (completing-read
                         "Provider: "
                         (mapcar (lambda (x) (car x)) terraform-doc-providers))
-                       terraform-doc-providers)))
+                       terraform-doc-providers)
+                (completing-read "Version: " nil nil nil "HEAD" nil "HEAD")))
   (if (member provider terraform-doc-providers)
-      (terraform-doc--render-tree (cdr provider) (format "*Terraform:%s*" (cdr provider)))
+      (terraform-doc--render-tree (cdr provider) (format "*Terraform:%s@%s*" (cdr provider) version) version)
     (message "%s" (propertize "Provider is not valid"))))
 
 (defun terraform-doc-at-point()
@@ -87,20 +88,20 @@
   (if (get-text-property (point) 'shr-url)
       (let* ((url (get-text-property (point) 'shr-url))
              (buffer-name (string-join (last (split-string url "/") 2) "/"))
-             (provider (replace-regexp-in-string ".*terraform-provider-\\(.+?\\)/.*" "\\1" url)))
+             (provider (replace-regexp-in-string ".*terraform-provider-\\(.+?\\)/\\(.+?\\)/.*" "\\1@\\2" url)))
         (terraform-doc--render-object url (format "*Terraform:%s:%s*" provider buffer-name)))))
 
-(defun terraform-doc--render-tree (provider buffer-name)
-  "Render the PROVIDER and rename to BUFFER-NAME."
+(defun terraform-doc--render-tree (provider buffer-name version)
+  "Render the PROVIDER@VERSION and rename to BUFFER-NAME."
   (if (get-buffer buffer-name)
       (switch-to-buffer buffer-name)
     (with-current-buffer (get-buffer-create buffer-name)
-      (insert (format "<a href=\"/terraform-providers/terraform-provider-%s/HEAD/website/docs/index.html.markdown\">Provider</a><br/>" provider))
+      (insert (format "<a href=\"/terraform-providers/terraform-provider-%s/%s/website/docs/index.html.markdown\">Provider</a><br/>" provider version))
       (let ((content))
         (dolist (url '("d" "r"))
           (with-current-buffer
               (url-retrieve-synchronously
-               (format "https://github.com/terraform-providers/terraform-provider-%s/file-list/HEAD/website/docs/%s" provider url))
+               (format "https://github.com/terraform-providers/terraform-provider-%s/file-list/%s/website/docs/%s" provider version url))
             (goto-char (point-min))
             (search-forward-regexp "\n\n" )
             (delete-region (point) (point-min))
