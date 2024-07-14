@@ -4,7 +4,7 @@
 
 ;; Author: Giap Tran <txgvnn@gmail.com>
 ;; URL: https://github.com/TxGVNN/terraform-doc
-;; Version: 2.0.0
+;; Version: 2.0.1
 ;; Package-Requires: ((emacs "25.1") (request "0.3.0") (promise "1.1") (org "9.2"))
 ;; Keywords: comm, docs, tools, terraform
 
@@ -221,8 +221,6 @@
       (cl-mapcar #'terraform--print-frontpage-item data))
     (org-mode)
     (setq-local org-link-elisp-confirm-function nil)
-    ;; Remap ENTER to org-open-at-point
-    (local-set-key [remap org-return] 'org-open-at-point)
     (goto-char (point-min))))
 
 (provide 'terraform-doc)
