@@ -219,6 +219,7 @@
            ;; push provider and version to data element
            (data (mapcar (lambda (x) (append x (list (cons 'provider provider) (cons 'version version)))) items)))
       (cl-mapcar #'terraform--print-frontpage-item data))
+    (sort-lines nil (point-min) (point-max))
     (org-mode)
     (setq-local org-link-elisp-confirm-function nil)
     (goto-char (point-min))))
