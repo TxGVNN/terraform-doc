@@ -2,7 +2,7 @@
 [[https://melpa.org/#/terraform-doc][file:https://melpa.org/packages/terraform-doc-badge.svg]]
 [[http://www.gnu.org/licenses/gpl-3.0.html][http://img.shields.io/:license-gpl3-blue.svg]]
 
-Lookup docs from Terraform github page on fly
+Lookup docs from https://registry.terraform.io page on fly
 
 * Usage
 
